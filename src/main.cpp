@@ -1,14 +1,22 @@
 #include <vector>
 #include "raylib.hpp"
 #include "GameObject.hpp"
+#include "Component.hpp"
 
-class Model : public GameObject {
+class Model : public Component {
  public:
   rl::Model model;
-  Model(const char* path) { model = rl::LoadModel(path); }
-
-  void Draw() { rl::DrawModel(model, position, 1.0f, rl::WHITE); }
+  Model(GameObject* owner, const char* path) : Component(owner) {
+    model = rl::LoadModel(path);
+  }
+  void Draw() { rl::DrawModel(model, owner->position, 1.0f, rl::WHITE); }
 };
+
+GameObject createModel(const char* path) {
+  GameObject gameObject;
+  gameObject.AddComponent<Model>(path);
+  return gameObject;
+}
 
 int main(void) {
   const int screenWidth = 800;
@@ -38,10 +46,9 @@ int main(void) {
   int lightColorLoc = rl::GetShaderLocation(shader, "lightColor");
   shader.locs[rl::SHADER_LOC_COLOR_DIFFUSE] = lightColorLoc;
 
-  Model car("models/car/car.obj");
-  car.model.materials[0].shader = shader;
-
-  std::vector<Model> gameObjects;
+  GameObject car = createModel("models/car/car.obj");
+  car.GetComponent<Model>()->model.materials[0].shader = shader;
+  std::vector<GameObject> gameObjects;
   gameObjects.push_back(car);
 
   rl::SetTargetFPS(60);
