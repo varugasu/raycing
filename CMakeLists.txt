@@ -9,6 +9,6 @@ foreach(package fmt raylib)
     find_package(${package} CONFIG REQUIRED)
 endforeach()
 
-add_executable(main main.cpp)
+add_executable(main ./src/main.cpp)
 
 target_link_libraries(main PRIVATE fmt::fmt raylib)

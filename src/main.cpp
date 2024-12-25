@@ -1,6 +1,14 @@
-namespace rl {
-#include "raylib.h"
-}
+#include <vector>
+#include "raylib.hpp"
+#include "GameObject.hpp"
+
+class Model : public GameObject {
+ public:
+  rl::Model model;
+  Model(const char* path) { model = rl::LoadModel(path); }
+
+  void Draw() { rl::DrawModel(model, position, 1.0f, rl::WHITE); }
+};
 
 int main(void) {
   const int screenWidth = 800;
@@ -30,10 +38,11 @@ int main(void) {
   int lightColorLoc = rl::GetShaderLocation(shader, "lightColor");
   shader.locs[rl::SHADER_LOC_COLOR_DIFFUSE] = lightColorLoc;
 
-  // Set shader for model
+  Model car("models/car/car.obj");
+  car.model.materials[0].shader = shader;
 
-  rl::Model model = rl::LoadModel("models/car/car.obj");
-  model.materials[0].shader = shader;
+  std::vector<Model> gameObjects;
+  gameObjects.push_back(car);
 
   rl::SetTargetFPS(60);
 
@@ -61,7 +70,11 @@ int main(void) {
     rl::SetShaderValue(shader, lightColorLoc, lightCol,
                        rl::SHADER_UNIFORM_VEC3);
 
-    rl::DrawModel(model, (rl::Vector3){0.0f, 0.0f, 0.0f}, 1.0f, rl::WHITE);
+    for (auto& gameObject : gameObjects) {
+      gameObject.Draw();
+      gameObject.Update();
+    }
+
     rl::DrawCube((rl::Vector3){3.0f, 0.0f, 0.0f}, 1.0f, 1.0f, 1.0f, rl::RED);
     rl::DrawGrid(10, 1.0f);
 
@@ -69,8 +82,6 @@ int main(void) {
 
     rl::EndDrawing();
   }
-
-  rl::UnloadModel(model);
 
   rl::CloseWindow();
 
